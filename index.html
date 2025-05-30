@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=1024, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, orientation=landscape"/>
+  <title>Kegeln Punkte</title>
+  <style>
+    html, body {
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      background: #222;
+      color: #fff;
+      font-family: 'Segoe UI', Arial, sans-serif;
+      width: 100vw;
+      height: 100vh;
+      min-height: 0;
+      min-width: 0;
+      overflow: hidden;
+    }
+    body {
+      display: flex;
+      flex-direction: row;
+      height: 100vh;
+      width: 100vw;
+      justify-content: center;
+      align-items: center;
+    }
+    .aspect-wrapper {
+      width: 100vw;
+      height: 100vh;
+      max-width: 1428px;
+      max-height: 1000px;
+      aspect-ratio: 10/7;
+      margin: auto;
+      background: #222;
+      display: flex;
+      flex-direction: row;
+      box-shadow: 0 0 40px #000a;
+      border-radius: 32px;
+      overflow: hidden;
+      position: relative;
+    }
+    .sidebar {
+      width: 260px;
+      background: #181818;
+      padding: 24px 12px;
+      box-sizing: border-box;
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      border-right: 2px solid #333;
+      min-width: 220px;
+      z-index: 1;
+    }
+    .sidebar h3 { color: #f1c40f; margin: 0 0 10px 0; font-size: 1.3em; }
+    .sidebar .spielerlist {
+      flex: 1;
+      overflow-y: auto;
+    }
+    .sidebar .spieleritem {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 0;
+      border-bottom: 1px solid #333;
+      font-size: 1.1em;
+      transition: color 0.2s;
+    }
+    .sidebar .spieleritem.active {
+      color: #f1c40f;
+      font-weight: bold;
+      animation: pulse 1.2s infinite;
+    }
+    @keyframes pulse {
+      0% { color: #f1c40f; }
+      50% { color: #ffe066; }
+      100% { color: #f1c40f; }
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-width: 0;
+      min-height: 0;
+      position: relative;
+      z-index: 1;
+      transition: filter 0.3s, opacity 0.3s;
+      height: 100%;
+    }
+    .blurred {
+      filter: blur(8px) brightness(0.7);
+      pointer-events: none;
+      user-select: none;
+    }
+    .karte {
+      background: #333;
+      border-radius: 24px;
+      box-shadow: 0 8px 40px #000a;
+      padding: 48px 40px 36px 40px;
+      margin-bottom: 24px;
+      min-width: 480px;
+      max-width: 90vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .karte h2 {
+      font-size: 3.2em; /* vorher 2.6em */
+      margin: 0 0 18px 0;
+      color: #f1c40f;
+      letter-spacing: 1px;
+      text-shadow: 0 2px 12px #000a;
+      font-weight: bold;
+    }
+    .punkte-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      justify-content: center;
+      margin-bottom: 18px;
+      max-width: 1100px;
+    }
+    .punkte-buttons button {
+      width: 60px;
+      height: 60px;
+      font-size: 1.1em;
+      background: linear-gradient(180deg, #ffe066 0%, #f1c40f 80%);
+      color: #222;
+      border: none;
+      border-radius: 24px;
+      margin: 0;
+      font-weight: bold;
+      cursor: pointer;
+      box-shadow: 0 8px 32px #0004, 0 2px 0 #d4ac0d;
+      transition: background 0.15s, transform 0.08s, box-shadow 0.15s;
+      position: relative;
+      outline: none;
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .punkte-buttons button:active {
+      background: linear-gradient(180deg, #f1c40f 0%, #ffe066 100%);
+      transform: translateY(4px) scale(0.96);
+      box-shadow: 0 1px 4px #0006, 0 1px 0 #d4ac0d;
+    }
+    .punkte-buttons button:hover {
+      background: linear-gradient(180deg, #fff6b0 0%, #ffe066 100%);
+      color: #222;
+    }
+    .korrektur-btn,
+    .sidebar button {
+      font-size: 0.8em;
+      padding: 8px 0;
+      border-radius: 7px;
+      margin-top: 9px;
+      background: linear-gradient(180deg, #ffe066 0%, #f1c40f 80%);
+      color: #222;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 4px 16px #0004, 0 2px 0 #d4ac0d;
+      transition: background 0.15s, transform 0.08s, box-shadow 0.15s;
+      position: relative;
+      outline: none;
+    }
+    .korrektur-btn:active,
+    .sidebar button:active {
+      background: linear-gradient(180deg, #f1c40f 0%, #ffe066 100%);
+      transform: translateY(2px) scale(0.97);
+      box-shadow: 0 1px 4px #0006, 0 1px 0 #d4ac0d;
+    }
+    .korrektur-btn:hover,
+    .sidebar button:hover {
+      background: linear-gradient(180deg, #fff6b0 0%, #ffe066 100%);
+      color: #222;
+    }
+    #overlay {
+      position: fixed;
+      left: 0; top: 0; width: 100vw; height: 100vh;
+      background: rgba(34,34,34,0.85);
+      color: #f1c40f;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      font-size: 2.5em;
+      z-index: 1000;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      backdrop-filter: blur(10px);
+    }
+    #overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .overlay-zahl {
+      font-size: 4em;
+      color: #fff;
+      text-shadow: 0 0 60px #f1c40f, 0 0 20px #fff;
+      animation: leuchten 1.5s;
+      margin-bottom: 0.5em;
+    }
+    .overlay-name {
+      font-size: 1.5em;
+      color: #f1c40f;
+      margin-bottom: 0.5em;
+    }
+    .overlay-next {
+      font-size: 2em;
+      color: #f1c40f;
+      margin-bottom: 0.5em;
+      text-align: center;
+    }
+    .setup-overlay {
+      background: rgba(34,34,34,0.97);
+      border-radius: 40px;
+      box-shadow: 0 8px 40px #000a;
+      padding: 60px 40px 40px 40px;
+      min-width: 400px;
+      max-width: 96vw;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: absolute;
+      left: 50%; top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2000;
+      color: #fff;
+      font-size: 1.2em;
+      text-align: center;
+      border: 3px solid #f1c40f;
+    }
+    .setup-overlay h2 {
+      font-size: 2em;
+      color: #f1c40f;
+      margin-bottom: 24px;
+      margin-top: 0;
+      text-shadow: 0 2px 12px #000a;
+    }
+    .setup-overlay input[type="number"] {
+      font-size: 1.1em;
+      padding: 10px;
+      border-radius: 10px;
+      border: none;
+      margin-bottom: 18px;
+      width: 120px;
+      text-align: center;
+      background: #222;
+      color: #f1c40f;
+      border: 2px solid #f1c40f;
+    }
+    .setup-overlay input[type="text"] {
+      font-size: 1em;
+      padding: 8px;
+      border-radius: 8px;
+      border: none;
+      margin-bottom: 12px;
+      width: 80%;
+      background: #222;
+      color: #fff;
+      border: 2px solid #f1c40f;
+    }
+    .setup-overlay .button-row {
+      display: flex;
+      gap: 8px;
+      width: 80%;
+      justify-content: center;
+      margin-top: 16px;
+    }
+    .setup-overlay button {
+      font-size: 0.65em;
+      padding: 8px 0;
+      border-radius: 7px;
+      background: linear-gradient(180deg, #ffe066 0%, #f1c40f 80%);
+      color: #222;
+      border: none;
+      font-weight: bold;
+      box-shadow: 0 4px 16px #0004, 0 2px 0 #d4ac0d;
+      transition: background 0.15s, transform 0.08s, box-shadow 0.15s;
+      outline: none;
+      cursor: pointer;
+    }
+    .setup-overlay button:active {
+      background: linear-gradient(180deg, #f1c40f 0%, #ffe066 100%);
+      transform: translateY(2px) scale(0.97);
+      box-shadow: 0 1px 4px #0006, 0 1px 0 #d4ac0d;
+    }
+    .setup-overlay button:hover {
+      background: linear-gradient(180deg, #fff6b0 0%, #ffe066 100%);
+      color: #222;
+    }
+    .punkte-buttons button,
+    .korrektur-btn,
+    .sidebar button,
+    .setup-overlay button {
+      font-weight: bold !important;
+    }
+    @keyframes leuchten {
+      0% { color: #fff; text-shadow: 0 0 18px #f1c40f, 0 0 2px #fff; }
+      50% { color: #f1c40f; text-shadow: 0 0 80px #f1c40f, 0 0 30px #fff; }
+      100% { color: #fff; text-shadow: 0 0 18px #f1c40f, 0 0 2px #fff; }
+    }
+    @media (max-width: 900px) {
+      .karte, .setup-overlay { min-width: 180px; padding: 10px 4px; }
+      .punkte-buttons button { width: 36px; height: 36px; font-size: 0.7em; }
+      .sidebar { width: 90px; min-width: 60px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="aspect-wrapper">
+    <div class="sidebar">
+      <h3>Spieler</h3>
+      <div class="spielerlist" id="sidebarSpieler"></div>
+      <button onclick="resetSpiel()" style="margin-top:18px;">Neues Spiel</button>
+    </div>
+    <div class="main" id="mainContent">
+      <div class="karte" id="karte" style="display:none;">
+        <h2 id="spielerName"></h2>
+        <div class="punkte-buttons" id="punkteButtons"></div>
+        <button class="korrektur-btn" id="korrekturBtn" onclick="korrektur()">Letzten Wurf zurücknehmen</button>
+      </div>
+      <div id="setupOverlay" class="setup-overlay">
+        <h2>Kegeln – Spieler anlegen</h2>
+        <label>Wie viele Spieler?</label><br>
+        <input type="number" id="anzahl" min="1" max="12" value="4"/><br>
+        <div id="namen"></div>
+        <div class="button-row">
+          <button onclick="abbrechenSetup()">Abbrechen</button>
+        </div>
+      </div>
+    </div>
+    <div id="overlay"></div>
+  </div>
+  <script>
+    let spieler = [];
+    let punkte = {};
+    let aktueller = 0;
+    let wurfHistory = [];
+
+    function setupNamen() {
+      const n = parseInt(document.getElementById('anzahl').value, 10);
+      let html = '';
+      for(let i=1; i<=n; i++) {
+        html += `<input type="text" id="spieler${i}" placeholder="Name Spieler ${i}" required />`;
+      }
+      html += `<div class="button-row">
+        <button onclick="startSpiel(${n})">Spiel starten</button>
+        <button onclick="abbrechenSetup()">Abbrechen</button>
+      </div>`;
+      document.getElementById('namen').innerHTML = html;
+
+      // Button-Styles für "Spiel starten" und "Abbrechen" anpassen
+      const style = document.createElement('style');
+      style.textContent = `
+        .setup-overlay button {
+          flex: 1;
+          padding: 12px 0;
+          font-size: 1em;
+        }
+      `;
+      document.head.append(style);
+    }
+
+    function startSpiel(n) {
+      spieler = [];
+      punkte = {};
+      aktueller = 0;
+      wurfHistory = [];
+      for(let i=1; i<=n; i++) {
+        const name = document.getElementById('spieler'+i).value.trim();
+        if(!name) return alert('Bitte alle Namen eingeben!');
+        spieler.push(name);
+        punkte[name] = 0;
+      }
+      document.getElementById('setupOverlay').style.display = 'none';
+      document.getElementById('karte').style.display = '';
+      renderSidebar();
+      showAktueller();
+    }
+
+    function abbrechenSetup() {
+      // Seite neu laden oder Setup-Overlay einfach ausblenden
+      location.reload();
+    }
+
+    function renderSidebar() {
+      let html = '';
+      spieler.forEach((name, idx) => {
+        html += `<div class="spieleritem${idx===aktueller?' active':''}">
+          <span>${name}</span>
+          <span>${punkte[name]}</span>
+        </div>`;
+      });
+      document.getElementById('sidebarSpieler').innerHTML = html;
+    }
+
+    function showAktueller() {
+      const name = spieler[aktueller];
+      document.getElementById('spielerName').textContent = name;
+      // Punkte-Buttons
+      let html = '';
+      for(let i=1; i<=50; i++) {
+        html += `<button onclick="punkteEingeben(${i})">${i}</button>`;
+      }
+      document.getElementById('punkteButtons').innerHTML = html;
+      updateKorrekturBtn();
+      renderSidebar();
+    }
+
+    function updateKorrekturBtn() {
+      const btn = document.getElementById('korrekturBtn');
+      if (wurfHistory.length === 0) {
+        btn.textContent = "Letzten Wurf zurücknehmen";
+        btn.disabled = true;
+        btn.style.opacity = "0.5";
+      } else {
+        const last = wurfHistory[wurfHistory.length - 1];
+        const prevName = spieler[last.spieler];
+        btn.textContent = `Letzten Wurf von ${prevName} zurücknehmen`;
+        btn.disabled = false;
+        btn.style.opacity = "1";
+      }
+    }
+
+    function punkteEingeben(punkteWurf) {
+      const name = spieler[aktueller];
+      punkte[name] += punkteWurf;
+      wurfHistory.push({spieler: aktueller, punkte: punkteWurf});
+      renderSidebar();
+      showOverlayZahl(punkteWurf, name, () => {
+        const naechster = spieler[(aktueller+1)%spieler.length];
+        showOverlayNext(naechster, () => {
+          aktueller = (aktueller+1)%spieler.length;
+          showAktueller();
+        });
+      });
+    }
+
+    function korrektur() {
+      if (wurfHistory.length === 0) return;
+      const last = wurfHistory.pop();
+      punkte[spieler[last.spieler]] -= last.punkte;
+      if (punkte[spieler[last.spieler]] < 0) punkte[spieler[last.spieler]] = 0;
+      aktueller = last.spieler;
+      showAktueller();
+      renderSidebar();
+    }
+
+    function resetSpiel() {
+      document.getElementById('setupOverlay').style.display = '';
+      document.getElementById('karte').style.display = 'none';
+      document.getElementById('namen').innerHTML = '';
+      document.getElementById('anzahl').value = 4;
+      document.getElementById('sidebarSpieler').innerHTML = '';
+      hideOverlay();
+      document.getElementById('mainContent').classList.remove('blurred');
+    }
+
+    function showOverlayZahl(zahl, name, cb) {
+      const overlay = document.getElementById('overlay');
+      overlay.innerHTML = `<div class="overlay-zahl">${zahl}</div>
+        <div class="overlay-name">${name}</div>
+        <div style="font-size:1.2em; color:#fff; margin-top:0.5em;">Punkte addiert</div>`;
+      overlay.classList.add('show');
+      document.getElementById('mainContent').classList.add('blurred');
+      setTimeout(() => {
+        hideOverlay();
+        cb && cb();
+      }, 3000);
+    }
+
+    function showOverlayNext(naechster, cb) {
+      const overlay = document.getElementById('overlay');
+      overlay.innerHTML = `<div class="overlay-next">Nächster Spieler:<br><b>${naechster}</b></div>`;
+      overlay.classList.add('show');
+      document.getElementById('mainContent').classList.add('blurred');
+      setTimeout(() => {
+        hideOverlay();
+        cb && cb();
+      }, 3000);
+    }
+
+    function showOverlay(text) {
+      const overlay = document.getElementById('overlay');
+      overlay.innerHTML = `<div>${text}</div>`;
+      overlay.classList.add('show');
+      document.getElementById('mainContent').classList.add('blurred');
+    }
+    function hideOverlay() {
+      const overlay = document.getElementById('overlay');
+      overlay.classList.remove('show');
+      document.getElementById('mainContent').classList.remove('blurred');
+    }
+  </script>
+</body>
+</html>
