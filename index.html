@@ -42,7 +42,7 @@
       position: relative;
     }
     .sidebar {
-      width: 260px;
+      width: 220px;
       background: #181818;
       padding: 24px 12px;
       box-sizing: border-box;
@@ -50,7 +50,7 @@
       flex-direction: column;
       gap: 18px;
       border-right: 2px solid #333;
-      min-width: 220px;
+      min-width: 160px;
       z-index: 1;
     }
     .sidebar h3 { color: #f1c40f; margin: 0 0 10px 0; font-size: 1.3em; }
@@ -62,15 +62,28 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 8px 0;
+      padding: 12px 0;
       border-bottom: 1px solid #333;
-      font-size: 1.1em;
+      font-size: 1.5em;
       transition: color 0.2s;
     }
     .sidebar .spieleritem.active {
       color: #f1c40f;
       font-weight: bold;
       animation: pulse 1.2s infinite;
+    }
+    .sidebar .spieleritem span:first-child {
+      max-width: 110px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: inline-block;
+      font-weight: bold;
+    }
+    .sidebar .spieleritem span:last-child {
+      min-width: 36px;
+      text-align: right;
+      font-weight: bold;
     }
     @keyframes pulse {
       0% { color: #f1c40f; }
@@ -95,25 +108,59 @@
       pointer-events: none;
       user-select: none;
     }
+    #uebersichtKartenContainer {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      min-height: 80px;
+      position: relative;
+      margin-bottom: 20px;
+    }
+    .uebersicht-karte {
+      position: relative;
+      margin: 0 auto;
+      min-width: 420px;
+      max-width: 90vw;
+      width: 100%;
+      background: #333;
+      border-radius: 18px;
+      box-shadow: 0 4px 24px #000a;
+      color: #ffe066;
+      font-weight: bold;
+      text-align: center;
+      font-size: 1.3em;
+      padding: 12px 32px;
+      animation: flipInY 0.6s cubic-bezier(.68,-0.55,.27,1.55);
+      opacity: 1;
+      transition: opacity 0.1s;
+    }
+    @keyframes flipInY {
+      0% { transform: rotateY(90deg); opacity: 0; }
+      60% { transform: rotateY(-20deg); opacity: 1; }
+      100% { transform: rotateY(0deg); opacity: 1; }
+    }
     .karte {
       background: #333;
       border-radius: 24px;
       box-shadow: 0 8px 40px #000a;
       padding: 48px 40px 36px 40px;
       margin-bottom: 24px;
-      min-width: 480px;
+      min-width: 420px;
       max-width: 90vw;
       display: flex;
       flex-direction: column;
       align-items: center;
+      position: relative;
     }
     .karte h2 {
-      font-size: 3.2em; /* vorher 2.6em */
+      font-size: 4.5em;
       margin: 0 0 18px 0;
       color: #f1c40f;
       letter-spacing: 1px;
-      text-shadow: 0 2px 12px #000a;
+      text-shadow: 0 2px 24px #f1c40f, 0 2px 12px #000a;
       font-weight: bold;
+      animation: leuchten 1.5s infinite;
     }
     .punkte-buttons {
       display: flex;
@@ -153,31 +200,36 @@
       color: #222;
     }
     .korrektur-btn,
-    .sidebar button {
-      font-size: 0.8em;
-      padding: 8px 0;
-      border-radius: 7px;
-      margin-top: 9px;
+    .sidebar button,
+    .setup-overlay button {
+      font-size: 1em;
+      padding: 12px 0;
+      border-radius: 10px;
       background: linear-gradient(180deg, #ffe066 0%, #f1c40f 80%);
       color: #222;
       border: none;
-      cursor: pointer;
+      font-weight: bold;
       box-shadow: 0 4px 16px #0004, 0 2px 0 #d4ac0d;
       transition: background 0.15s, transform 0.08s, box-shadow 0.15s;
-      position: relative;
       outline: none;
+      cursor: pointer;
+      width: 100%;
+      margin-bottom: 8px;
     }
     .korrektur-btn:active,
-    .sidebar button:active {
+    .sidebar button:active,
+    .setup-overlay button:active {
       background: linear-gradient(180deg, #f1c40f 0%, #ffe066 100%);
       transform: translateY(2px) scale(0.97);
       box-shadow: 0 1px 4px #0006, 0 1px 0 #d4ac0d;
     }
     .korrektur-btn:hover,
-    .sidebar button:hover {
+    .sidebar button:hover,
+    .setup-overlay button:hover {
       background: linear-gradient(180deg, #fff6b0 0%, #ffe066 100%);
       color: #222;
     }
+    /* Einheitliches Overlay-Design */
     #overlay {
       position: fixed;
       left: 0; top: 0; width: 100vw; height: 100vh;
@@ -188,7 +240,7 @@
       justify-content: center;
       flex-direction: column;
       font-size: 2.5em;
-      z-index: 1000;
+      z-index: 2000;
       opacity: 0;
       pointer-events: none;
       transition: opacity 0.2s;
@@ -198,117 +250,110 @@
       opacity: 1;
       pointer-events: all;
     }
-    .overlay-zahl {
-      font-size: 4em;
-      color: #fff;
-      text-shadow: 0 0 60px #f1c40f, 0 0 20px #fff;
-      animation: leuchten 1.5s;
-      margin-bottom: 0.5em;
-    }
-    .overlay-name {
-      font-size: 1.5em;
-      color: #f1c40f;
-      margin-bottom: 0.5em;
-    }
-    .overlay-next {
-      font-size: 2em;
-      color: #f1c40f;
-      margin-bottom: 0.5em;
-      text-align: center;
-    }
-    .setup-overlay {
-      background: rgba(34,34,34,0.97);
-      border-radius: 40px;
+    .overlay-content {
+      background: #222;
+      border-radius: 32px;
       box-shadow: 0 8px 40px #000a;
-      padding: 60px 40px 40px 40px;
-      min-width: 400px;
-      max-width: 96vw;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      position: absolute;
-      left: 50%; top: 50%;
-      transform: translate(-50%, -50%);
-      z-index: 2000;
-      color: #fff;
+      padding: 48px 72px;
+      color: #f1c40f;
       font-size: 1.2em;
-      text-align: center;
-      border: 3px solid #f1c40f;
-    }
-    .setup-overlay h2 {
-      font-size: 2em;
-      color: #f1c40f;
-      margin-bottom: 24px;
-      margin-top: 0;
-      text-shadow: 0 2px 12px #000a;
-    }
-    .setup-overlay input[type="number"] {
-      font-size: 1.1em;
-      padding: 10px;
-      border-radius: 10px;
-      border: none;
-      margin-bottom: 18px;
-      width: 120px;
-      text-align: center;
-      background: #222;
-      color: #f1c40f;
-      border: 2px solid #f1c40f;
-    }
-    .setup-overlay input[type="text"] {
-      font-size: 1em;
-      padding: 8px;
-      border-radius: 8px;
-      border: none;
-      margin-bottom: 12px;
-      width: 80%;
-      background: #222;
-      color: #fff;
-      border: 2px solid #f1c40f;
-    }
-    .setup-overlay .button-row {
-      display: flex;
-      gap: 8px;
-      width: 80%;
-      justify-content: center;
-      margin-top: 16px;
-    }
-    .setup-overlay button {
-      font-size: 0.65em;
-      padding: 8px 0;
-      border-radius: 7px;
-      background: linear-gradient(180deg, #ffe066 0%, #f1c40f 80%);
-      color: #222;
-      border: none;
       font-weight: bold;
-      box-shadow: 0 4px 16px #0004, 0 2px 0 #d4ac0d;
-      transition: background 0.15s, transform 0.08s, box-shadow 0.15s;
-      outline: none;
-      cursor: pointer;
+      text-align: center;
+      animation: flipInY 0.6s cubic-bezier(.68,-0.55,.27,1.55);
+      min-width: 320px;
+      max-width: 90vw;
+      margin: 0 auto;
     }
-    .setup-overlay button:active {
-      background: linear-gradient(180deg, #f1c40f 0%, #ffe066 100%);
-      transform: translateY(2px) scale(0.97);
-      box-shadow: 0 1px 4px #0006, 0 1px 0 #d4ac0d;
+    .overlay-content .headline {
+      color: #ffe066;
+      font-size: 1.5em;
+      margin-bottom: 0.5em;
+      text-shadow: 0 0 24px #f1c40f, 0 0 8px #fff;
+      font-weight: bold;
+      animation: leuchten 1.5s infinite;
     }
-    .setup-overlay button:hover {
-      background: linear-gradient(180deg, #fff6b0 0%, #ffe066 100%);
-      color: #222;
+    .overlay-content .subline {
+      color: #fff;
+      font-size: 1.1em;
+      margin-bottom: 0.5em;
     }
-    .punkte-buttons button,
-    .korrektur-btn,
-    .sidebar button,
-    .setup-overlay button {
-      font-weight: bold !important;
+    .overlay-content .big {
+      font-size: 2.5em;
+      color: #ffe066;
+      text-shadow: 0 0 24px #f1c40f, 0 0 8px #fff;
+      margin-bottom: 0.2em;
     }
     @keyframes leuchten {
       0% { color: #fff; text-shadow: 0 0 18px #f1c40f, 0 0 2px #fff; }
       50% { color: #f1c40f; text-shadow: 0 0 80px #f1c40f, 0 0 30px #fff; }
       100% { color: #fff; text-shadow: 0 0 18px #f1c40f, 0 0 2px #fff; }
     }
+    .setup-overlay {
+      background: #222;
+      border-radius: 32px;
+      box-shadow: 0 8px 40px #000a;
+      padding: 48px 72px;
+      color: #f1c40f;
+      font-size: 1.2em;
+      font-weight: bold;
+      text-align: center;
+      min-width: 320px;
+      max-width: 90vw;
+      margin: 0 auto;
+      position: fixed;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 1001;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+    }
+    .setup-overlay.show {
+      opacity: 1;
+      pointer-events: all;
+    }
+    .setup-overlay h2 {
+      color: #ffe066;
+      font-size: 1.5em;
+      margin-bottom: 0.5em;
+      text-shadow: 0 0 24px #f1c40f, 0 0 8px #fff;
+      font-weight: bold;
+    }
+    .setup-overlay label {
+      color: #fff;
+      font-size: 1.1em;
+      margin-bottom: 0.5em;
+      display: block;
+    }
+    .setup-overlay input[type="number"], .setup-overlay input[type="text"] {
+      font-size: 1.2em;
+      border-radius: 12px;
+      border: none;
+      padding: 8px 16px;
+      margin: 8px 0 16px 0;
+      background: #333;
+      color: #ffe066;
+      box-shadow: 0 2px 8px #0004;
+      width: 80%;
+      text-align: center;
+      outline: none;
+      transition: box-shadow 0.2s;
+    }
+    .setup-overlay input[type="number"]:focus, .setup-overlay input[type="text"]:focus {
+      box-shadow: 0 0 0 2px #ffe066, 0 2px 8px #0004;
+    }
+    .setup-overlay .button-row {
+      display: flex;
+      gap: 18px;
+      justify-content: center;
+      margin-top: 12px;
+    }
     @media (max-width: 900px) {
       .karte, .setup-overlay { min-width: 180px; padding: 10px 4px; }
       .punkte-buttons button { width: 36px; height: 36px; font-size: 0.7em; }
       .sidebar { width: 90px; min-width: 60px; }
+      .runden-karte, .uebersicht-karte { min-width: 180px; }
     }
   </style>
 </head>
@@ -320,6 +365,7 @@
       <button onclick="resetSpiel()" style="margin-top:18px;">Neues Spiel</button>
     </div>
     <div class="main" id="mainContent">
+      <div id="uebersichtKartenContainer"></div>
       <div class="karte" id="karte" style="display:none;">
         <h2 id="spielerName"></h2>
         <div class="punkte-buttons" id="punkteButtons"></div>
@@ -328,10 +374,96 @@
       <div id="setupOverlay" class="setup-overlay">
         <h2>Kegeln – Spieler anlegen</h2>
         <label>Wie viele Spieler?</label><br>
-        <input type="number" id="anzahl" min="1" max="12" value="4"/><br>
+        <input type="number" id="anzahl" min="1" max="12" value="4" onchange="setupNamen()"/><br>
         <div id="namen"></div>
         <div class="button-row">
+          <button onclick="saveNamenUndWeiter()">Weiter</button>
           <button onclick="abbrechenSetup()">Abbrechen</button>
+        </div>
+      </div>
+      <div id="modusOverlay" class="setup-overlay">
+        <h2>Spielmodus wählen</h2>
+        <div class="modus-buttons" style="
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          gap: 24px;
+          margin-bottom: 32px;
+        ">
+          <button onclick="setModus('gesamt')" style="
+            width: 300px;
+            padding: 16px;
+            font-size: 1.1em;
+            text-align: center;
+          ">
+            Punkte pro Runde<br>
+            <span style="font-size: 0.9em; color: #aaa;">(beide Würfe zusammen)</span>
+          </button>
+          <button onclick="setModus('einzeln')" style="
+            width: 300px;
+            padding: 16px;
+            font-size: 1.1em;
+            text-align: center;
+          ">
+            Punkte pro Wurf<br>
+            <span style="font-size: 0.9em; color: #aaa;">(2 Würfe pro Spieler)</span>
+          </button>
+        </div>
+        
+        <div id="punkteMaxWrap" style="
+          display: none;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+        ">
+          <label for="punkteMax" style="color:#f1c40f;">
+            Wie viele Punkte pro Wurf/Runde maximal?
+          </label>
+          <input 
+            type="number" 
+            id="punkteMax" 
+            min="1" 
+            max="50" 
+            value="9"
+            style="
+              font-size: 1.4em;
+              width: 80px;
+              text-align: center;
+              margin: 8px 0;
+            "
+          />
+          <button onclick="startSpielMitPunkteMax()" style="
+            width: 300px;
+            margin-top: 8px;
+          ">Weiter</button>
+        </div>
+        <!-- Nach dem punkteMaxWrap Container im modusOverlay -->
+        <div id="rundenWrap" style="
+          display: none;
+          flex-direction: column;
+          align-items: center;
+          gap: 16px;
+        ">
+          <label for="rundenAnzahl" style="color:#f1c40f;">
+            Wie viele Runden sollen gespielt werden?
+          </label>
+          <input 
+            type="number" 
+            id="rundenAnzahl" 
+            min="1" 
+            max="20" 
+            value="10"
+            style="
+              font-size: 1.4em;
+              width: 80px;
+              text-align: center;
+              margin: 8px 0;
+            "
+          />
+          <button onclick="startSpielMitRunden()" style="
+            width: 300px;
+            margin-top: 8px;
+          ">Spiel starten</button>
         </div>
       </div>
     </div>
@@ -342,29 +474,98 @@
     let punkte = {};
     let aktueller = 0;
     let wurfHistory = [];
+    let spielModus = "gesamt";
+    let wurfZaehler = 0;
+    let wurfPunkte = 0;
+    let punkteMax = 25;
+    let rundenGesamt = 10;
+    let aktuelleRunde = 1;
+    let uebersichtLoopIndex = 0;
+    let uebersichtLoopTimeout = null;
+    let uebersichtLoopActive = false;
 
+    // Optional: Nach dem Setup das erste Namensfeld fokussieren
     function setupNamen() {
       const n = parseInt(document.getElementById('anzahl').value, 10);
       let html = '';
       for(let i=1; i<=n; i++) {
         html += `<input type="text" id="spieler${i}" placeholder="Name Spieler ${i}" required />`;
       }
-      html += `<div class="button-row">
-        <button onclick="startSpiel(${n})">Spiel starten</button>
-        <button onclick="abbrechenSetup()">Abbrechen</button>
-      </div>`;
       document.getElementById('namen').innerHTML = html;
+      // Fokus auf erstes Feld
+      setTimeout(() => {
+        const first = document.getElementById('spieler1');
+        if (first) first.focus();
+      }, 50);
+    }
 
-      // Button-Styles für "Spiel starten" und "Abbrechen" anpassen
-      const style = document.createElement('style');
-      style.textContent = `
-        .setup-overlay button {
-          flex: 1;
-          padding: 12px 0;
-          font-size: 1em;
+    // Optional: Fehlerbehandlung für zu viele Spieler
+    function saveNamenUndWeiter() {
+      // n wurde nicht deklariert - hier ist die Korrektur
+      const n = parseInt(document.getElementById('anzahl').value, 10);
+      
+      if (n < 1 || n > 12) {
+        alert('Bitte zwischen 1 und 12 Spieler wählen!');
+        return;
+      }
+      
+      for(let i=1; i<=n; i++) {
+        if(!document.getElementById('spieler'+i).value.trim()) {
+          alert('Bitte alle Namen eingeben!');
+          return;
         }
-      `;
-      document.head.append(style);
+      }
+      
+      // Overlay-Handling
+      document.getElementById('setupOverlay').classList.remove('show');
+      document.getElementById('modusOverlay').classList.add('show');
+      
+      // Style-Handling für den nächsten Schritt
+      document.getElementById('punkteMaxWrap').style.display = 'none';
+      document.getElementById('rundenWrap').style.display = 'none';
+      
+      // Spieleranzahl global speichern
+      window._spielerAnzahl = n;
+    }
+
+    function abbrechenSetup() {
+      document.getElementById('setupOverlay').classList.add('show');
+      document.getElementById('karte').style.display = 'none';
+      document.getElementById('namen').innerHTML = '';
+      document.getElementById('anzahl').value = 4;
+      document.getElementById('sidebarSpieler').innerHTML = '';
+      document.getElementById('modusOverlay').classList.remove('show');
+      document.getElementById('punkteMaxWrap').style.display = 'none';
+      document.getElementById('rundenWrap').style.display = 'none';
+      hideOverlay();
+      document.getElementById('mainContent').classList.remove('blurred');
+      setupNamen();
+    }
+
+    function setModus(modus) {
+      spielModus = modus;
+      // Modusbuttons ausblenden
+      document.querySelector('#modusOverlay .modus-buttons').style.display = 'none';
+      // Punktemaximum anzeigen
+      document.getElementById('punkteMaxWrap').style.display = 'flex';
+      document.getElementById('punkteMax').value = 9;
+    }
+
+    function startSpielMitPunkteMax() {
+      punkteMax = parseInt(document.getElementById('punkteMax').value, 10);
+      document.getElementById('punkteMaxWrap').style.display = 'none';
+      
+      // Statt direkt das Spiel zu starten, zeigen wir die Rundenabfrage
+      document.getElementById('rundenWrap').style.display = 'flex';
+    }
+
+    function startSpielMitRunden() {
+      rundenGesamt = parseInt(document.getElementById('rundenAnzahl').value, 10);
+      aktuelleRunde = 1;
+      
+      // Jetzt starten wir das Spiel
+      document.getElementById('modusOverlay').classList.remove('show');
+      startSpiel(window._spielerAnzahl);
     }
 
     function startSpiel(n) {
@@ -372,45 +573,280 @@
       punkte = {};
       aktueller = 0;
       wurfHistory = [];
+      wurfZaehler = 0;
+      wurfPunkte = 0;
       for(let i=1; i<=n; i++) {
         const name = document.getElementById('spieler'+i).value.trim();
-        if(!name) return alert('Bitte alle Namen eingeben!');
         spieler.push(name);
         punkte[name] = 0;
       }
-      document.getElementById('setupOverlay').style.display = 'none';
       document.getElementById('karte').style.display = '';
       renderSidebar();
       showAktueller();
-    }
-
-    function abbrechenSetup() {
-      // Seite neu laden oder Setup-Overlay einfach ausblenden
-      location.reload();
-    }
-
-    function renderSidebar() {
-      let html = '';
-      spieler.forEach((name, idx) => {
-        html += `<div class="spieleritem${idx===aktueller?' active':''}">
-          <span>${name}</span>
-          <span>${punkte[name]}</span>
-        </div>`;
-      });
-      document.getElementById('sidebarSpieler').innerHTML = html;
+      startUebersichtKartenLoopOben();
     }
 
     function showAktueller() {
       const name = spieler[aktueller];
       document.getElementById('spielerName').textContent = name;
-      // Punkte-Buttons
       let html = '';
-      for(let i=1; i<=50; i++) {
-        html += `<button onclick="punkteEingeben(${i})">${i}</button>`;
+      if (spielModus === "gesamt") {
+        for(let i=1; i<=punkteMax; i++) {
+          html += `<button onclick="punkteEingeben(${i})">${i}</button>`;
+        }
+      } else {
+        for(let i=0; i<=punkteMax; i++) {
+          html += `<button onclick="punkteEingebenEinzeln(${i})">${i}</button>`;
+        }
       }
       document.getElementById('punkteButtons').innerHTML = html;
       updateKorrekturBtn();
       renderSidebar();
+    }
+
+    // Optional: Robustheit für Punkte-Eingabe
+    function punkteEingeben(punkteWurf) {
+      if (typeof punkteWurf !== 'number' || punkteWurf < 0 || punkteWurf > punkteMax) return;
+      const name = spieler[aktueller];
+      punkte[name] += punkteWurf;
+      wurfHistory.push({spieler: aktueller, punkte: punkteWurf, modus: spielModus, runde: aktuelleRunde});
+      renderSidebar();
+      showRundenKarte(aktueller, punkteWurf, () => {
+        const naechsterIndex = (aktueller + 1) % spieler.length;
+        const naechsterName = spieler[naechsterIndex];
+        showOverlayNext(naechsterName, () => {
+          if (naechsterIndex === 0) {
+            aktuelleRunde++;
+            if (aktuelleRunde > rundenGesamt) {
+              showEndergebnis();
+              return;
+            }
+          }
+          aktueller = naechsterIndex;
+          showAktueller();
+        });
+      });
+    }
+
+    function punkteEingebenEinzeln(punkteWurf) {
+      const name = spieler[aktueller];
+      if (wurfZaehler === 0) {
+        wurfPunkte = punkteWurf;
+        wurfZaehler = 1;
+        showRundenKarte(aktueller, punkteWurf, () => {});
+      } else {
+        wurfPunkte += punkteWurf;
+        punkte[name] += wurfPunkte;
+        wurfHistory.push({spieler: aktueller, punkte: wurfPunkte, modus: spielModus, runde: aktuelleRunde});
+        renderSidebar();
+        showRundenKarte(aktueller, wurfPunkte, () => {
+          const naechsterIndex = (aktueller + 1) % spieler.length;
+          const naechsterName = spieler[naechsterIndex];
+          showOverlayNext(naechsterName, () => {
+            if (naechsterIndex === 0) {
+              aktuelleRunde++;
+              if (aktuelleRunde > rundenGesamt) {
+                showEndergebnis();
+                return;
+              }
+            }
+            aktueller = naechsterIndex;
+            wurfZaehler = 0;
+            wurfPunkte = 0;
+            showAktueller();
+          });
+        });
+      }
+    }
+
+    function showEndergebnis() {
+      // Gewinner bestimmen
+      let max = -Infinity, gewinner = [];
+      for (const name of spieler) {
+        if (punkte[name] > max) {
+          max = punkte[name];
+          gewinner = [name];
+        } else if (punkte[name] === max) {
+          gewinner.push(name);
+        }
+      }
+      showOverlay(
+        `<div>Spiel beendet!</div>
+         <div style="margin-top:16px;">
+           ${spieler.map(name => `
+             <div style="margin:10px 0;${gewinner.includes(name) ? 'animation:pulse 1s infinite; color:#ffe066;' : ''}">
+               ${name}: <span style="font-size:1.2em;">${punkte[name]}</span>
+               ${gewinner.includes(name) ? '🏆' : ''}
+             </div>
+           `).join('')}
+         </div>`
+      );
+    }
+
+    // Flipkarte als Overlay zentral über allen Karten
+    function showRundenKarte(spielerIndex, rundenPunkte, cb) {
+      const alt = document.getElementById('rundenKarteOverlay');
+      if (alt) alt.remove();
+
+      const overlay = document.createElement('div');
+      overlay.id = 'rundenKarteOverlay';
+      overlay.style.position = 'fixed';
+      overlay.style.left = '50%';
+      overlay.style.top = '50%';
+      overlay.style.transform = 'translate(-50%, -50%)';
+      overlay.style.zIndex = '2001';
+      overlay.style.transition = 'opacity 0.3s';
+      overlay.style.opacity = '0';
+      overlay.innerHTML = `
+        <div class="overlay-content" style="transform:scale(1.5);padding:72px 108px;">
+          <div class="subline" style="font-size:1.65em;">Runde ${aktuelleRunde} von ${rundenGesamt}</div>
+          <div class="headline" style="font-size:2.25em;">${spieler[spielerIndex]}</div>
+          <div class="big" style="font-size:3.75em;">${rundenPunkte} Punkte</div>
+        </div>
+      `;
+      document.body.appendChild(overlay);
+
+      setTimeout(() => {
+        overlay.style.opacity = '1';
+      }, 10);
+      setTimeout(() => {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          overlay.remove();
+          cb && cb();
+        }, 600);
+      }, 5000);
+    }
+
+    // Übersichtskarte über der Spielerkarte, immer gleiche Breite
+    function showUebersichtKarteOben(aktuellePersonIndex) {
+      const container = document.getElementById('uebersichtKartenContainer');
+      container.innerHTML = '';
+
+      const person = spieler[aktuellePersonIndex];
+      
+      // Würfe nach Runden gruppieren
+      const wuerfeNachRunden = {};
+      wurfHistory
+        .filter(w => spieler[w.spieler] === person)
+        .forEach(w => {
+          if (!wuerfeNachRunden[w.runde]) wuerfeNachRunden[w.runde] = [];
+          wuerfeNachRunden[w.runde].push(w.punkte);
+        });
+
+      // Würfe als HTML formatieren
+      const wuerfeHtml = Object.entries(wuerfeNachRunden)
+        .map(([runde, punkte]) => {
+          const summe = punkte.reduce((a, b) => a + b, 0);
+          let wurfDetails = '';
+          
+          if (spielModus === 'einzeln') {
+            // Im Einzelmodus: Beide Würfe + Summe
+            wurfDetails = `
+              <div style="font-size:0.8em;color:#aaa;">
+                ${punkte.join(' + ')}
+              </div>`;
+          }
+          
+          return `
+            <div style="
+              display: inline-block;
+              background: #444;
+              padding: 6px 12px;
+              border-radius: 12px;
+              margin: 0 8px 8px 0;
+              min-width: 60px;
+              text-align: center;
+            ">
+              <div style="font-size:0.9em;color:#999;">R${runde}</div>
+              ${wurfDetails}
+              <div style="font-size:1.1em;color:#ffe066;font-weight:bold;">${summe}</div>
+            </div>`;
+        })
+        .join('');
+
+      const karte = document.createElement('div');
+      karte.className = 'uebersicht-karte';
+      karte.style.opacity = '0';
+      karte.style.transition = 'opacity 0.1s';
+      karte.innerHTML = `
+        <div style="font-size:1.2em; color:#f1c40f; margin-bottom:8px;">${person}</div>
+        <div style="
+          font-size:1em;
+          color:#fff;
+          white-space:nowrap;
+          overflow-x:auto;
+          padding: 4px 0;
+        ">${wuerfeHtml || '<span style="color:#888;">Noch keine Würfe</span>'}</div>
+      `;
+      container.appendChild(karte);
+
+      // Breite anpassen und einblenden
+      function setBreiteUndEinblenden(versuche = 0) {
+        const karteContainer = document.getElementById('karte');
+        const breite = karteContainer.offsetWidth;
+        if (breite > 50 || versuche > 10) {
+          const px = (breite > 0 ? breite : 420) + 'px';
+          karte.style.width = px;
+          karte.style.minWidth = px;
+          karte.style.maxWidth = px;
+          karte.classList.remove('uebersicht-karte');
+          void karte.offsetWidth;
+          karte.classList.add('uebersicht-karte');
+          karte.style.opacity = '1';
+        } else {
+          setTimeout(() => setBreiteUndEinblenden(versuche + 1), 30);
+        }
+      }
+      setBreiteUndEinblenden();
+    }
+
+    // Loop für Übersichtskarte oben
+    function startUebersichtKartenLoopOben() {
+      uebersichtLoopActive = true;
+      uebersichtLoopIndex = 0;
+      function next() {
+        if (!uebersichtLoopActive) return;
+        showUebersichtKarteOben(uebersichtLoopIndex);
+        uebersichtLoopIndex = (uebersichtLoopIndex + 1) % spieler.length;
+        uebersichtLoopTimeout = setTimeout(next, 5000);
+      }
+      next();
+    }
+    function stopUebersichtKartenLoopOben() {
+      uebersichtLoopActive = false;
+      if (uebersichtLoopTimeout) clearTimeout(uebersichtLoopTimeout);
+      document.getElementById('uebersichtKartenContainer').innerHTML = '';
+    }
+
+    function showOverlayNext(naechster, cb) {
+      const overlay = document.getElementById('overlay');
+      overlay.innerHTML = `
+        <div class="overlay-content">
+          <div class="headline">Nächster Spieler</div>
+          <div class="big">${naechster}</div>
+        </div>`;
+      overlay.classList.add('show');
+      document.getElementById('mainContent').classList.add('blurred');
+      setTimeout(() => {
+        hideOverlay();
+        cb && cb();
+      }, 4000);
+    }
+
+    function showOverlay(text) {
+      const overlay = document.getElementById('overlay');
+      overlay.innerHTML = `
+        <div class="overlay-content">
+          <div class="headline">${text}</div>
+        </div>`;
+      overlay.classList.add('show');
+      document.getElementById('mainContent').classList.add('blurred');
+    }
+    function hideOverlay() {
+      const overlay = document.getElementById('overlay');
+      overlay.classList.remove('show');
+      document.getElementById('mainContent').classList.remove('blurred');
     }
 
     function updateKorrekturBtn() {
@@ -428,75 +864,60 @@
       }
     }
 
-    function punkteEingeben(punkteWurf) {
-      const name = spieler[aktueller];
-      punkte[name] += punkteWurf;
-      wurfHistory.push({spieler: aktueller, punkte: punkteWurf});
-      renderSidebar();
-      showOverlayZahl(punkteWurf, name, () => {
-        const naechster = spieler[(aktueller+1)%spieler.length];
-        showOverlayNext(naechster, () => {
-          aktueller = (aktueller+1)%spieler.length;
-          showAktueller();
-        });
-      });
-    }
-
+    // Optional: Robustheit für Korrektur
     function korrektur() {
       if (wurfHistory.length === 0) return;
       const last = wurfHistory.pop();
+      if (!spieler[last.spieler]) return;
       punkte[spieler[last.spieler]] -= last.punkte;
       if (punkte[spieler[last.spieler]] < 0) punkte[spieler[last.spieler]] = 0;
       aktueller = last.spieler;
+      if (spielModus === "einzeln") {
+        wurfZaehler = 0;
+        wurfPunkte = 0;
+      }
       showAktueller();
       renderSidebar();
     }
 
     function resetSpiel() {
-      document.getElementById('setupOverlay').style.display = '';
+      document.getElementById('setupOverlay').classList.add('show');
       document.getElementById('karte').style.display = 'none';
       document.getElementById('namen').innerHTML = '';
       document.getElementById('anzahl').value = 4;
       document.getElementById('sidebarSpieler').innerHTML = '';
+      document.getElementById('modusOverlay').classList.remove('show');
+      document.getElementById('punkteMaxWrap').style.display = 'none';
+      document.getElementById('rundenWrap').style.display = 'none';
       hideOverlay();
       document.getElementById('mainContent').classList.remove('blurred');
+      stopUebersichtKartenLoopOben();
+      document.getElementById('uebersichtKartenContainer').innerHTML = '';
+      setupNamen();
     }
 
-    function showOverlayZahl(zahl, name, cb) {
-      const overlay = document.getElementById('overlay');
-      overlay.innerHTML = `<div class="overlay-zahl">${zahl}</div>
-        <div class="overlay-name">${name}</div>
-        <div style="font-size:1.2em; color:#fff; margin-top:0.5em;">Punkte addiert</div>`;
-      overlay.classList.add('show');
-      document.getElementById('mainContent').classList.add('blurred');
-      setTimeout(() => {
-        hideOverlay();
-        cb && cb();
-      }, 3000);
+    function renderSidebar() {
+      let html = '';
+      spieler.forEach((name, idx) => {
+        html += `<div class="spieleritem${idx===aktueller?' active':''}">
+          <span>${name}</span>
+          <span>${punkte[name]}</span>
+        </div>`;
+      });
+      document.getElementById('sidebarSpieler').innerHTML = html;
     }
 
-    function showOverlayNext(naechster, cb) {
-      const overlay = document.getElementById('overlay');
-      overlay.innerHTML = `<div class="overlay-next">Nächster Spieler:<br><b>${naechster}</b></div>`;
-      overlay.classList.add('show');
-      document.getElementById('mainContent').classList.add('blurred');
-      setTimeout(() => {
-        hideOverlay();
-        cb && cb();
-      }, 3000);
-    }
-
-    function showOverlay(text) {
-      const overlay = document.getElementById('overlay');
-      overlay.innerHTML = `<div>${text}</div>`;
-      overlay.classList.add('show');
-      document.getElementById('mainContent').classList.add('blurred');
-    }
-    function hideOverlay() {
-      const overlay = document.getElementById('overlay');
-      overlay.classList.remove('show');
-      document.getElementById('mainContent').classList.remove('blurred');
-    }
+    window.onload = function() {
+      setupNamen();
+      document.getElementById('setupOverlay').classList.add('show');
+      document.getElementById('karte').style.display = 'none';
+      document.getElementById('modusOverlay').classList.remove('show');
+      document.getElementById('punkteMaxWrap').style.display = 'none';
+      document.getElementById('rundenWrap').style.display = 'none';
+      hideOverlay();
+      stopUebersichtKartenLoopOben();
+      document.getElementById('uebersichtKartenContainer').innerHTML = '';
+    };
   </script>
 </body>
 </html>
