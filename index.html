@@ -631,13 +631,23 @@
     function punkteEingebenEinzeln(punkteWurf) {
       const name = spieler[aktueller];
       if (wurfZaehler === 0) {
+        // Ersten Wurf merken, Punkte noch nicht addieren
         wurfPunkte = punkteWurf;
         wurfZaehler = 1;
         showRundenKarte(aktueller, punkteWurf, () => {});
       } else {
+        const ersterWurf = wurfPunkte;
         wurfPunkte += punkteWurf;
         punkte[name] += wurfPunkte;
-        wurfHistory.push({spieler: aktueller, punkte: wurfPunkte, modus: spielModus, runde: aktuelleRunde});
+        // Beide Würfe zusammen mitloggen, damit die Übersichtskarten
+        // auch die Einzelwürfe anzeigen können
+        wurfHistory.push({
+          spieler: aktueller,
+          punkte: wurfPunkte,
+          wuerfe: [ersterWurf, punkteWurf],
+          modus: spielModus,
+          runde: aktuelleRunde
+        });
         renderSidebar();
         showRundenKarte(aktueller, wurfPunkte, () => {
           const naechsterIndex = (aktueller + 1) % spieler.length;
@@ -731,20 +741,24 @@
         .filter(w => spieler[w.spieler] === person)
         .forEach(w => {
           if (!wuerfeNachRunden[w.runde]) wuerfeNachRunden[w.runde] = [];
-          wuerfeNachRunden[w.runde].push(w.punkte);
+          if (Array.isArray(w.wuerfe)) {
+            wuerfeNachRunden[w.runde].push(...w.wuerfe);
+          } else {
+            wuerfeNachRunden[w.runde].push(w.punkte);
+          }
         });
 
       // Würfe als HTML formatieren
       const wuerfeHtml = Object.entries(wuerfeNachRunden)
-        .map(([runde, punkte]) => {
-          const summe = punkte.reduce((a, b) => a + b, 0);
+        .map(([runde, wurfe]) => {
+          const summe = wurfe.reduce((a, b) => a + b, 0);
           let wurfDetails = '';
-          
+
           if (spielModus === 'einzeln') {
             // Im Einzelmodus: Beide Würfe + Summe
             wurfDetails = `
               <div style="font-size:0.8em;color:#aaa;">
-                ${punkte.join(' + ')}
+                ${wurfe.join(' + ')}
               </div>`;
           }
           
@@ -851,21 +865,34 @@
 
     function updateKorrekturBtn() {
       const btn = document.getElementById('korrekturBtn');
-      if (wurfHistory.length === 0) {
-        btn.textContent = "Letzten Wurf zurücknehmen";
+      if (spielModus === 'einzeln' && wurfZaehler === 1) {
+        const name = spieler[aktueller];
+        btn.textContent = `Wurf von ${name} zurücknehmen`;
+        btn.disabled = false;
+        btn.style.opacity = '1';
+      } else if (wurfHistory.length === 0) {
+        btn.textContent = 'Letzten Wurf zurücknehmen';
         btn.disabled = true;
-        btn.style.opacity = "0.5";
+        btn.style.opacity = '0.5';
       } else {
         const last = wurfHistory[wurfHistory.length - 1];
         const prevName = spieler[last.spieler];
         btn.textContent = `Letzten Wurf von ${prevName} zurücknehmen`;
         btn.disabled = false;
-        btn.style.opacity = "1";
+        btn.style.opacity = '1';
       }
     }
 
     // Optional: Robustheit für Korrektur
     function korrektur() {
+      if (spielModus === 'einzeln' && wurfZaehler === 1) {
+        // Ersten Wurf der laufenden Runde zurücknehmen
+        wurfZaehler = 0;
+        wurfPunkte = 0;
+        updateKorrekturBtn();
+        return;
+      }
+
       if (wurfHistory.length === 0) return;
       const last = wurfHistory.pop();
       if (!spieler[last.spieler]) return;
